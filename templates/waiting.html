@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ожидание игроков</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Ожидание игроков</h1>
+        <p class="text-center">Создатель: <span id="creator">{{ creator }}</span></p>
+        <div class="row mt-4">
+            <div class="col-md-6 offset-md-3">
+                <h3>Подключившиеся игроки:</h3>
+                <ul class="list-group" id="playerList"></ul>
+                <button class="btn btn-success w-100 mt-3" id="startButton" style="display: none;" onclick="startGame()">Начать игру</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io({ autoConnect: true });
+        const gameId = '{{ game_id }}';
+        const playerId = '{{ player_id }}';
+
+        socket.on('connect', () => {
+            console.log('Подключён с SID:', socket.id);
+            socket.emit('update_sid', { game_id: gameId, player_id: playerId });
+        });
+
+        socket.on('update_players', (data) => {
+            console.log('Получено update_players:', data);
+            const playerList = document.getElementById('playerList');
+            playerList.innerHTML = '';
+            data.players.forEach(player => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerText = player;
+                playerList.appendChild(li);
+            });
+            document.getElementById('creator').innerText = data.creator;
+            const isCreator = data.is_creator;
+            console.log('Я создатель?', isCreator);
+            document.getElementById('startButton').style.display = isCreator ? 'block' : 'none';
+        });
+
+        socket.on('player_joined', (data) => {
+            console.log('Получено player_joined:', data);
+            const playerList = document.getElementById('playerList');
+            playerList.innerHTML = '';
+            data.players.forEach(player => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerText = player;
+                playerList.appendChild(li);
+            });
+        });
+
+        socket.on('start', (data) => {
+            console.log('Получено start:', data);
+            window.location.href = `/game/${data.game_id}/${data.player_id}`;
+        });
+
+        socket.on('error', (data) => {
+            console.log('Получено error:', data);
+            alert(data.message);
+        });
+
+        function startGame() {
+            console.log('Нажата кнопка "Начать игру", отправка start_game с gameId:', gameId);
+            socket.emit('start_game', { game_id: gameId });
+        }
+    </script>
+</body>
+</html>
