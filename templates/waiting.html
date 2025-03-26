@@ -8,10 +8,19 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center">Ожидание игроков</h1>
+        <h1 class="text-center">Игра создана!</h1>
         <p class="text-center">Создатель: <span id="creator">{{ creator }}</span></p>
+
+         <!-- Описание игры -->
         <div class="row mt-4">
             <div class="col-md-6 offset-md-3">
+                <div class="glass-card fade-in">
+                    <h5 class="card-title">Ждем участников игры 🚀</h5>
+                    <p class="card-text">
+                        Как только вас соберется от 2х до 4х человек, создатель должен нажать "Начать игру". Если вы не начнете игру в течении пяти минут после её создания, она будет сброшена и вы вернетесь на главный экран.
+                    </p>
+                    
+                </div>
                 <h3>Подключившиеся игроки:</h3>
                 <ul class="list-group" id="playerList"></ul>
                 <button class="btn btn-success w-100 mt-3" id="startButton" style="display: none;" onclick="startGame()">Начать игру</button>
@@ -71,6 +80,12 @@
             console.log('Нажата кнопка "Начать игру", отправка start_game с gameId:', gameId);
             socket.emit('start_game', { game_id: gameId });
         }
+    </script>
+    <script>
+        socket.on('game_reset', (data) => {
+            alert(data.message);
+            window.location.href = '/';  // Перенаправляем на главную страницу
+        });
     </script>
 </body>
 </html>
